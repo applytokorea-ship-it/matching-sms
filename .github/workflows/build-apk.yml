@@ -2,7 +2,11 @@ name: APK 빌드
 
 on:
   push:
+    branches: [main]
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -22,8 +26,30 @@ jobs:
       - name: APK 빌드
         run: gradle assembleRelease --no-daemon
 
-      - name: APK 업로드
+      - name: APK 이름 정리
+        run: cp app/build/outputs/apk/release/app-release.apk matching-sms.apk
+
+      - name: APK 업로드 (Actions)
         uses: actions/upload-artifact@v4
         with:
           name: 매칭문자-apk
-          path: app/build/outputs/apk/release/*.apk
+          path: matching-sms.apk
+
+      - name: 릴리스 등록 (휴대폰에서 바로 받기)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="v1.0.${{ github.run_number }}"
+          gh release create "$TAG" matching-sms.apk --title "매칭문자 $TAG" --notes "휴대폰에서 matching-sms.apk 를 눌러 내려받아 설치하세요."
+
+      - name: apk 브랜치에 저장
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          mkdir -p /tmp/out && cp matching-sms.apk /tmp/out/
+          git checkout --orphan apk
+          git rm -rf . > /dev/null
+          cp /tmp/out/matching-sms.apk .
+          git add matching-sms.apk
+          git commit -m "APK build ${{ github.run_number }}"
+          git push -f origin apk
