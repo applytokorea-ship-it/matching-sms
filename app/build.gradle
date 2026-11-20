@@ -1,0 +1,29 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'kr.contactmatch.sms'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'kr.contactmatch.sms'
+        minSdk 26
+        targetSdk 34
+        versionCode 1
+        versionName '1.0'
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            // 직접 설치용: 디버그 키로 서명 (Play 스토어 배포 시 별도 키 필요)
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
